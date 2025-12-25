@@ -1001,9 +1001,11 @@ import Login from "./components/Login";
 import Signup from "./components/Signup";
 import NoteForm from "./components/NoteForm";
 import NoteItem from "./components/NoteItem";
+import "./App.css";
 
 function App() {
   const [notes, setNotes] = useState([]);
+  const [editingNote, setEditingNote] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
   const [showLogin, setShowLogin] = useState(true);
 
@@ -1012,8 +1014,7 @@ function App() {
       const res = await api.get("/notes");
       setNotes(res.data);
     } catch {
-      localStorage.removeItem("token");
-      setIsLoggedIn(false);
+      console.log("Token invalid or expired");
     }
   };
 
@@ -1021,35 +1022,61 @@ function App() {
     if (isLoggedIn) fetchNotes();
   }, [isLoggedIn]);
 
+  const handleSave = async ({ title, description }) => {
+    if (editingNote) {
+      await api.put(`/notes/${editingNote._id}`, { title, description });
+      setEditingNote(null);
+    } else {
+      await api.post("/notes", { title, description });
+    }
+    fetchNotes();
+  };
+
+  const handleDelete = async (id) => {
+    await api.delete(`/notes/${id}`);
+    fetchNotes();
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="container">
+        {showLogin ? (
+          <Login onLoginSuccess={() => setIsLoggedIn(true)} />
+        ) : (
+          <Signup onSignupSuccess={() => setShowLogin(true)} />
+        )}
+        <button onClick={() => setShowLogin(!showLogin)}>
+          {showLogin ? "Go to Signup" : "Go to Login"}
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      {!isLoggedIn ? (
-        <>
-          {showLogin ? (
-            <Login onLoginSuccess={() => setIsLoggedIn(true)} />
-          ) : (
-            <Signup onSignupSuccess={() => setShowLogin(true)} />
-          )}
-          <button onClick={() => setShowLogin(!showLogin)}>
-            {showLogin ? "Go to Signup" : "Go to Login"}
-          </button>
-        </>
-      ) : (
-        <>
-          <NoteForm onSubmit={fetchNotes} />
-          {notes.map((n) => (
-            <NoteItem note={n} />
-          ))}
-          <button
-            onClick={() => {
-              localStorage.removeItem("token");
-              setIsLoggedIn(false);
-            }}
-          >
-            Logout
-          </button>
-        </>
-      )}
+    <div className="container">
+      <h2>Your Notes</h2>
+
+      <NoteForm onSubmit={handleSave} editingNote={editingNote} />
+
+      {notes.length === 0 ? <p>No notes yet.</p> : null}
+
+      {notes.map((note) => (
+        <NoteItem
+          key={note._id}
+          note={note}
+          onEdit={setEditingNote}
+          onDelete={handleDelete}
+        />
+      ))}
+
+      <button
+        onClick={() => {
+          localStorage.removeItem("token");
+          setIsLoggedIn(false);
+        }}
+      >
+        Logout
+      </button>
     </div>
   );
 }

@@ -16,11 +16,23 @@
 // export default NoteItem;
 
 // UI/UX update
+// export default function NoteItem({ note, onEdit, onDelete }) {
+//   return (
+//     <div className="note">
+//       <h3>{note.title}</h3>
+//       <p>{note.description}</p>
+//       <button onClick={() => onEdit(note)}>Edit</button>
+//       <button onClick={() => onDelete(note._id)}>Delete</button>
+//     </div>
+//   );
+// }
+
 export default function NoteItem({ note, onEdit, onDelete }) {
   return (
     <div className="note">
       <h3>{note.title}</h3>
       <p>{note.description}</p>
+
       <button onClick={() => onEdit(note)}>Edit</button>
       <button onClick={() => onDelete(note._id)}>Delete</button>
     </div>

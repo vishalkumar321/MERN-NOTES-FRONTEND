@@ -43,41 +43,34 @@ import { useState } from "react";
 import api from "../api";
 
 export default function Signup({ onSignupSuccess }) {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
-  const handleSignup = async () => {
+  const signupHandler = async () => {
     try {
-      // backend expects "email"
-      await api.post("/auth/signup", {
-        email: username,
-        password,
-      });
+      await api.post("/auth/signup", { email, password });
+      alert("Signup successful! Please login.");
       onSignupSuccess();
-    } catch (err) {
-      console.log(err);
-      setError("Signup failed: username and password required");
+    } catch {
+      alert("Signup failed: Email may already exist or missing data");
     }
   };
 
   return (
     <div>
       <h2>Signup</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
       <input
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
       />
       <input
-        type="password"
         placeholder="Password"
+        type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <button onClick={handleSignup}>Signup</button>
+      <button onClick={signupHandler}>Signup</button>
     </div>
   );
 }

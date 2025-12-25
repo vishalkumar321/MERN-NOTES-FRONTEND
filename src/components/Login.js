@@ -7,13 +7,8 @@ export default function Login({ onLoginSuccess }) {
 
   const handleLogin = async () => {
     try {
-      const res = await api.post("/auth/login", {
-        username,
-        password,
-      });
-
+      const res = await api.post("/auth/login", { email, password });
       localStorage.setItem("token", res.data.token);
-      alert("Login successful!");
       onLoginSuccess();
     } catch (err) {
       if (err.response && err.response.data && err.response.data.error) {

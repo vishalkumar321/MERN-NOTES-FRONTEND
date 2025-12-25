@@ -35,6 +35,22 @@
 // export default api;
 
 // FIX API ENDPOINT
+// import axios from "axios";
+
+// const api = axios.create({
+//   baseURL:
+//     process.env.REACT_APP_API_URL ||
+//     "https://mern-notes-backend-kfzy.onrender.com",
+// });
+
+// api.interceptors.request.use((config) => {
+//   const token = localStorage.getItem("token");
+//   if (token) config.headers.Authorization = token;
+//   return config;
+// });
+
+// export default api;
+
 import axios from "axios";
 
 const api = axios.create({
@@ -43,9 +59,13 @@ const api = axios.create({
     "https://mern-notes-backend-kfzy.onrender.com",
 });
 
+// add token to every request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
-  if (token) config.headers.Authorization = token;
+  if (token) {
+    // IMPORTANT: no "Bearer"
+    config.headers.Authorization = token;
+  }
   return config;
 });
 

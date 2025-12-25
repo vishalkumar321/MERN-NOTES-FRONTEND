@@ -1,8 +1,49 @@
+// import { useState } from "react";
+// import api from "../api";
+
+// export default function Login({ onLoginSuccess }) {
+//   const [username, setUsername] = useState("");
+//   const [password, setPassword] = useState("");
+
+//   const handleLogin = async () => {
+//     try {
+//       const res = await api.post("/auth/login", { email, password });
+//       localStorage.setItem("token", res.data.token);
+//       onLoginSuccess();
+//     } catch (err) {
+//       if (err.response && err.response.data && err.response.data.error) {
+//         alert(err.response.data.error);
+//       } else {
+//         alert("Server not reachable. Please try again.");
+//       }
+//     }
+//   };
+
+//   return (
+//     <div>
+//       <h2>Login</h2>
+
+//       <input
+//         placeholder="Username"
+//         onChange={(e) => setUsername(e.target.value)}
+//       />
+
+//       <input
+//         placeholder="Password"
+//         type="password"
+//         onChange={(e) => setPassword(e.target.value)}
+//       />
+
+//       <button onClick={handleLogin}>Login</button>
+//     </div>
+//   );
+// }
+
 import { useState } from "react";
 import api from "../api";
 
 export default function Login({ onLoginSuccess }) {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
@@ -11,29 +52,26 @@ export default function Login({ onLoginSuccess }) {
       localStorage.setItem("token", res.data.token);
       onLoginSuccess();
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.error) {
-        alert(err.response.data.error);
-      } else {
-        alert("Server not reachable. Please try again.");
-      }
+      console.log("Login failed:", err.response?.data?.error || err.message);
+      alert("Invalid credentials");
     }
   };
 
   return (
     <div>
       <h2>Login</h2>
-
       <input
-        placeholder="Username"
-        onChange={(e) => setUsername(e.target.value)}
+        type="email"
+        placeholder="Enter email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
       />
-
       <input
-        placeholder="Password"
         type="password"
+        placeholder="Enter password"
+        value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-
       <button onClick={handleLogin}>Login</button>
     </div>
   );

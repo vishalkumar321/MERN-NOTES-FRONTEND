@@ -995,26 +995,118 @@
 
 // export default App;
 
+// import { useEffect, useState } from "react";
+// import api from "./api";
+// import Login from "./components/Login";
+// import Signup from "./components/Signup";
+// import NoteForm from "./components/NoteForm";
+// import NoteItem from "./components/NoteItem";
+// import "./App.css";
+
+// function App() {
+//   const [notes, setNotes] = useState([]);
+//   const [editingNote, setEditingNote] = useState(null);
+//   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+//   const [showLogin, setShowLogin] = useState(true);
+
+//   const fetchNotes = async () => {
+//     try {
+//       const res = await api.get("/notes");
+//       setNotes(res.data);
+//     } catch {
+//       console.log("Token invalid or expired");
+//     }
+//   };
+
+//   useEffect(() => {
+//     if (isLoggedIn) fetchNotes();
+//   }, [isLoggedIn]);
+
+//   const handleSave = async ({ title, description }) => {
+//     if (editingNote) {
+//       await api.put(`/notes/${editingNote._id}`, { title, description });
+//       setEditingNote(null);
+//     } else {
+//       await api.post("/notes", { title, description });
+//     }
+//     fetchNotes();
+//   };
+
+//   const handleDelete = async (id) => {
+//     await api.delete(`/notes/${id}`);
+//     fetchNotes();
+//   };
+
+//   if (!isLoggedIn) {
+//     return (
+//       <div className="container">
+//         {showLogin ? (
+//           <Login onLoginSuccess={() => setIsLoggedIn(true)} />
+//         ) : (
+//           <Signup onSignupSuccess={() => setShowLogin(true)} />
+//         )}
+//         <button onClick={() => setShowLogin(!showLogin)}>
+//           {showLogin ? "Go to Signup" : "Go to Login"}
+//         </button>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="container">
+//       <h2>Your Notes</h2>
+
+//       <NoteForm onSubmit={handleSave} editingNote={editingNote} />
+
+//       {notes.length === 0 ? <p>No notes yet.</p> : null}
+
+//       {notes.map((note) => (
+//         <NoteItem
+//           key={note._id}
+//           note={note}
+//           onEdit={setEditingNote}
+//           onDelete={handleDelete}
+//         />
+//       ))}
+
+//       <button
+//         onClick={() => {
+//           localStorage.removeItem("token");
+//           setIsLoggedIn(false);
+//         }}
+//       >
+//         Logout
+//       </button>
+//     </div>
+//   );
+// }
+
+// export default App;
+
+// ADD TOAST-UI FOR NOTES CRUD
 import { useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import api from "./api";
+import "./App.css";
 import Login from "./components/Login";
-import Signup from "./components/Signup";
 import NoteForm from "./components/NoteForm";
 import NoteItem from "./components/NoteItem";
-import "./App.css";
+import Signup from "./components/Signup";
 
 function App() {
   const [notes, setNotes] = useState([]);
   const [editingNote, setEditingNote] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
-  const [showLogin, setShowLogin] = useState(true);
+  const [error, setError] = useState("");
 
   const fetchNotes = async () => {
     try {
       const res = await api.get("/notes");
       setNotes(res.data);
     } catch {
-      console.log("Token invalid or expired");
+      setError("Failed to load notes ❌");
+      toast.error("Could not fetch notes");
     }
   };
 
@@ -1023,31 +1115,37 @@ function App() {
   }, [isLoggedIn]);
 
   const handleSave = async ({ title, description }) => {
-    if (editingNote) {
-      await api.put(`/notes/${editingNote._id}`, { title, description });
-      setEditingNote(null);
-    } else {
-      await api.post("/notes", { title, description });
+    try {
+      if (editingNote) {
+        await api.put(`/notes/${editingNote._id}`, { title, description });
+        toast.info("Note updated ✏️");
+        setEditingNote(null);
+      } else {
+        await api.post("/notes", { title, description });
+        toast.success("Note added 📌");
+      }
+      fetchNotes();
+    } catch {
+      toast.error("Error saving note ❌");
     }
-    fetchNotes();
   };
 
   const handleDelete = async (id) => {
-    await api.delete(`/notes/${id}`);
-    fetchNotes();
+    try {
+      await api.delete(`/notes/${id}`);
+      toast.error("Note deleted 🗑️");
+      fetchNotes();
+    } catch {
+      toast.error("Delete failed ❌");
+    }
   };
 
   if (!isLoggedIn) {
     return (
       <div className="container">
-        {showLogin ? (
-          <Login onLoginSuccess={() => setIsLoggedIn(true)} />
-        ) : (
-          <Signup onSignupSuccess={() => setShowLogin(true)} />
-        )}
-        <button onClick={() => setShowLogin(!showLogin)}>
-          {showLogin ? "Go to Signup" : "Go to Login"}
-        </button>
+        <Login onLoginSuccess={() => setIsLoggedIn(true)} />
+        <Signup onSignupSuccess={() => toast.success("Signup successful 🎉")} />
+        <ToastContainer position="top-right" autoClose={2000} />
       </div>
     );
   }
@@ -1056,9 +1154,11 @@ function App() {
     <div className="container">
       <h2>Your Notes</h2>
 
+      {error && <div className="error">{error}</div>}
+
       <NoteForm onSubmit={handleSave} editingNote={editingNote} />
 
-      {notes.length === 0 ? <p>No notes yet.</p> : null}
+      {notes.length === 0 && <p>No notes yet.</p>}
 
       {notes.map((note) => (
         <NoteItem
@@ -1072,11 +1172,14 @@ function App() {
       <button
         onClick={() => {
           localStorage.removeItem("token");
+          toast.info("Logged out 👋");
           setIsLoggedIn(false);
         }}
       >
         Logout
       </button>
+
+      <ToastContainer position="top-right" autoClose={2000} />
     </div>
   );
 }

@@ -39,26 +39,71 @@
 //   );
 // }
 
+// import { useState } from "react";
+// import api from "../api";
+
+// export default function Signup({ onSignupSuccess }) {
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+
+//   const signupHandler = async () => {
+//     try {
+//       await api.post("/auth/signup", { email, password });
+//       alert("Signup successful! Please login.");
+//       onSignupSuccess();
+//     } catch {
+//       alert("Signup failed: Email may already exist or missing data");
+//     }
+//   };
+
+//   return (
+//     <div>
+//       <h2>Signup</h2>
+//       <input
+//         placeholder="Email"
+//         value={email}
+//         onChange={(e) => setEmail(e.target.value)}
+//       />
+//       <input
+//         placeholder="Password"
+//         type="password"
+//         value={password}
+//         onChange={(e) => setPassword(e.target.value)}
+//       />
+//       <button onClick={signupHandler}>Signup</button>
+//     </div>
+//   );
+// }
+
+// ADD TOAST-UI FOR NOTES CRUD
 import { useState } from "react";
+import { toast } from "react-toastify";
 import api from "../api";
 
-export default function Signup({ onSignupSuccess }) {
+function Signup({ onSignupSuccess }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const signupHandler = async () => {
+  const handleSignup = async () => {
+    if (!email || !password) return toast.error("Enter email + password");
+
     try {
+      setLoading(true);
       await api.post("/auth/signup", { email, password });
-      alert("Signup successful! Please login.");
+      toast.success("Signup successful 🎉 Now login");
       onSignupSuccess();
-    } catch {
-      alert("Signup failed: Email may already exist or missing data");
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Signup failed ❌");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div>
-      <h2>Signup</h2>
+      <h3>Signup</h3>
+
       <input
         placeholder="Email"
         value={email}
@@ -70,7 +115,12 @@ export default function Signup({ onSignupSuccess }) {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <button onClick={signupHandler}>Signup</button>
+
+      <button onClick={handleSignup} disabled={loading}>
+        {loading ? "Signing up..." : "Signup"}
+      </button>
     </div>
   );
 }
+
+export default Signup;
